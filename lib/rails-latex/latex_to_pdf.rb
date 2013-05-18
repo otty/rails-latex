@@ -17,10 +17,10 @@ class LatexToPdf
     dir=File.join(Rails.root,'tmp','rails-latex',"#{Process.pid}-#{Thread.current.hash}")
     input=File.join(dir,'input.tex')
     FileUtils.mkdir_p(dir)
-    # copy any additional supporting files (.cls, .sty, ...)
-    supporting = config[:supporting]
-    if supporting.class == String or supporting.class == Array and supporting.length > 0
-      FileUtils.cp(supporting, dir)
+    # use template, if any
+    template = config[:template]
+    if template.class == String
+      FileUtils.cp_r(Dir["#{template}/*"],dir)
     end
     File.open(input,'wb') {|io| io.write(code) }
     Process.waitpid(
