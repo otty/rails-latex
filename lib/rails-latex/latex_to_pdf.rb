@@ -50,6 +50,14 @@ class LatexToPdf
     result
   end
 
+  def self.input_latex(filename)
+    filename = "#{Rails.root}/app/views/#{filename}"
+    filename = "#{filename}.tex" unless File.extname(filename).present?
+    file = File.open(filename, "r")
+    input = file.read
+    file.close
+    input
+  end
   # Escapes LaTex special characters in text so that they wont be interpreted as LaTex commands.
   #
   # This method will use RedCloth to do the escaping if available.
