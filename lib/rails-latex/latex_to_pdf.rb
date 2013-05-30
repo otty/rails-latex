@@ -31,12 +31,11 @@ class LatexToPdf
           STDERR.reopen(STDOUT)
           args=config[:arguments] + %w[-shell-escape -interaction batchmode input.tex]
           
-          # we need bibtex as well, so run latex commands by hand
-          system 'latex input.tex'
+          # we need bibtex as well, so run pdflatex commands by hand
+          system 'pdflatex input.tex'
           system 'bibtex input'
-          system 'latex input.tex'
-          system 'latex input.tex'
-          system 'dvipdf input.dvi'
+          system 'pdflatex input.tex'
+          system 'pdflatex input.tex'
           
           #system config[:command],'-draftmode',*args if parse_twice
           #exec config[:command],*args
@@ -51,7 +50,7 @@ class LatexToPdf
     if File.exist?(pdf_file=input.sub(/\.tex$/,'.pdf'))
       FileUtils.mv(input.sub(/\.tex$/,'.log'),File.join(dir,'..','input.log'))
       result=File.read(pdf_file)
-      FileUtils.rm_rf(dir)
+      #FileUtils.rm_rf(dir)
     else
       raise "pdflatex failed: See #{input.sub(/\.tex$/,'.log')} for details"
     end
