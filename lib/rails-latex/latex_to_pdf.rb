@@ -30,8 +30,16 @@ class LatexToPdf
           STDOUT.reopen("input.log","a")
           STDERR.reopen(STDOUT)
           args=config[:arguments] + %w[-shell-escape -interaction batchmode input.tex]
-          system config[:command],'-draftmode',*args if parse_twice
-          exec config[:command],*args
+          
+          # we need bibtex as well, so run latex commands by hand
+          system 'latex input.tex'
+          system 'bibtex input'
+          system 'latex input.tex'
+          system 'latex input.tex'
+          system 'dvipdf input.dvi'
+          
+          #system config[:command],'-draftmode',*args if parse_twice
+          #exec config[:command],*args
         rescue
           File.open("input.log",'a') {|io|
             io.write("#{$!.message}:\n#{$!.backtrace.join("\n")}\n")
