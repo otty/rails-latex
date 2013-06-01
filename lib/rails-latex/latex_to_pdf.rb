@@ -1,6 +1,6 @@
 class LatexToPdf
   def self.config
-    @config||={:command => 'pdflatex', :arguments => ['-halt-on-error'], :parse_twice => false}
+    @config||={:command => 'pdflatex', :bibtex => false, :arguments => []}
   end
 
   # Converts a string of LaTeX +code+ into a binary string of PDF.
@@ -9,11 +9,9 @@ class LatexToPdf
   # files.
   #
   # The config argument defaults to LatexToPdf.config but can be overridden using @latex_config.
-  #
-  # The parse_twice argument is deprecated in favor of using config[:parse_twice] instead.
-  def self.generate_pdf(code,config,parse_twice=nil)
+
+  def self.generate_pdf(code, config)
     config=self.config.merge(config)
-    parse_twice=config[:parse_twice] if parse_twice.nil?
     dir=File.join(Rails.root,'tmp','rails-latex',"#{Process.pid}-#{Thread.current.hash}")
     input=File.join(dir,'input.tex')
     FileUtils.mkdir_p(dir)
@@ -29,16 +27,14 @@ class LatexToPdf
           Dir.chdir dir
           STDOUT.reopen("input.log","a")
           STDERR.reopen(STDOUT)
-          args=config[:arguments] + %w[-shell-escape -interaction batchmode input.tex]
-          
-          # we need bibtex as well, so run pdflatex commands by hand
-          system 'pdflatex input.tex'
-          system 'bibtex input'
-          system 'pdflatex input.tex'
-          system 'pdflatex input.tex'
-          
-          #system config[:command],'-draftmode',*args if parse_twice
-          #exec config[:command],*args
+          if config[:bibtex] == true
+            # we need bibtex as well, so run pdflatex commands by hand
+            system "pdflatex -halt-on-error -shell-escape input.tex"
+            system 'bibtex input'
+          end
+          system "pdflatex -halt-on-error -shell-escape input.tex"
+          system "pdflatex -halt-on-error -shell-escape input.tex"
+
         rescue
           File.open("input.log",'a') {|io|
             io.write("#{$!.message}:\n#{$!.backtrace.join("\n")}\n")
